@@ -6,6 +6,7 @@ import { useWallets, usePrivy } from '@privy-io/react-auth';
 import { SERA_DOMAIN, SERA_TYPES, MAINNET_USDC } from '@/utils/seraEip712';
 import { encodeStandaloneUuid } from '@/utils/seraUtils';
 import { v4 as uuidv4 } from 'uuid';
+import { ethers } from 'ethers';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://flow-pay-jo5r.onrender.com';
 
@@ -57,8 +58,9 @@ export default function TransferModal({
 
     try {
       const wallet = wallets[0];
-      const provider = await wallet.getEthersProvider();
-      const signer = provider.getSigner();
+      const ethereumProvider = await wallet.getEthereumProvider();
+      const provider = new ethers.BrowserProvider(ethereumProvider);
+      const signer = await provider.getSigner();
 
       const orderId = uuidv4();
       const uuidInt = encodeStandaloneUuid(orderId, 1);
@@ -78,7 +80,7 @@ export default function TransferModal({
       };
 
       // Sign EIP-712 order
-      const signature = await signer._signTypedData(
+      const signature = await signer.signTypedData(
         SERA_DOMAIN,
         { Order: SERA_TYPES.Order },
         orderData

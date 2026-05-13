@@ -10,6 +10,7 @@ import { Search, Bell, Home as HomeIcon, Activity, CreditCard, User, Zap } from 
 import { useWallets, usePrivy } from '@privy-io/react-auth';
 import { SERA_DOMAIN, SERA_TYPES } from '@/utils/seraEip712';
 import Image from 'next/image';
+import { ethers } from 'ethers';
 
 const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://flow-pay-jo5r.onrender.com';
 
@@ -86,12 +87,13 @@ export default function Home() {
     setIsActivating(true);
     try {
       const wallet = wallets[0];
-      const provider = await wallet.getEthersProvider();
-      const signer = provider.getSigner();
+      const ethereumProvider = await wallet.getEthereumProvider();
+      const provider = new ethers.BrowserProvider(ethereumProvider);
+      const signer = await provider.getSigner();
       const walletAddress = wallet.address;
       const timestamp = Math.floor(Date.now() / 1000);
 
-      const signature = await signer._signTypedData(
+      const signature = await signer.signTypedData(
         SERA_DOMAIN,
         { ManageApiKey: SERA_TYPES.ManageApiKey },
         { owner: walletAddress, action: 'create', timestamp }
