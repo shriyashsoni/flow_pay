@@ -1,0 +1,227 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id                String          @id @default(uuid())
+  email             String?         @unique
+  username          String          @unique
+  fullName          String?
+  avatarUrl         String?
+  privyWalletAddress String?        @unique
+  seraApiKey         String?        @unique
+  seraApiSecret      String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  wallets           Wallet[]
+  sentTransactions  Transaction[]   @relation("Sender")
+  receivedTransactions Transaction[] @relation("Receiver")
+  comments          Comment[]
+  reactions         Reaction[]
+  creatorProfile    CreatorProfile?
+  aiInsights        AIInsight[]
+  groups            GroupMember[]
+  notifications     Notification[]
+}
+
+model Wallet {
+  id                String          @id @default(uuid())
+  userId            String?
+  groupId           String?
+  type              WalletType      @default(PERSONAL)
+  balance           Decimal         @default(0) @db.Decimal(20, 8)
+  currency          String          @default("USDC")
+  address           String?         @unique // External or internal wallet address
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  user              User?           @relation(fields: [userId], references: [id])
+  group             Group?          @relation(fields: [groupId], references: [id])
+  transactions      Transaction[]
+}
+
+enum WalletType {
+  PERSONAL
+  GROUP
+  TREASURY
+}
+
+model Transaction {
+  id                String          @id @default(uuid())
+  senderId          String?
+  receiverId        String?
+  walletId          String?
+  amount            Decimal         @db.Decimal(20, 8)
+  currency          String
+  status            TransactionStatus @default(PENDING)
+  type              TransactionType
+  
+  // Social Data
+  caption           String?
+  visibility        Visibility      @default(PUBLIC)
+  
+  // Blockchain/Sera Data
+  seraTxId          String?
+  blockchainTxHash  String?
+  
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  sender            User?           @relation("Sender", fields: [senderId], references: [id])
+  receiver          User?           @relation("Receiver", fields: [receiverId], references: [id])
+  wallet            Wallet?         @relation(fields: [walletId], references: [id])
+  comments          Comment[]
+  reactions         Reaction[]
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum TransactionType {
+  PAYMENT
+  TRANSFER
+  SWAP
+  TIP
+  SUBSCRIPTION
+}
+
+enum Visibility {
+  PUBLIC
+  FRIENDS
+  PRIVATE
+}
+
+model Comment {
+  id                String          @id @default(uuid())
+  transactionId     String
+  userId            String
+  content           String
+  createdAt         DateTime        @default(now())
+
+  // Relations
+  transaction       Transaction     @relation(fields: [transactionId], references: [id])
+  user              User            @relation(fields: [userId], references: [id])
+}
+
+model Reaction {
+  id                String          @id @default(uuid())
+  transactionId     String
+  userId            String
+  emoji             String
+  createdAt         DateTime        @default(now())
+
+  // Relations
+  transaction       Transaction     @relation(fields: [transactionId], references: [id])
+  user              User            @relation(fields: [userId], references: [id])
+}
+
+model Group {
+  id                String          @id @default(uuid())
+  name              String
+  description       String?
+  avatarUrl         String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  members           GroupMember[]
+  wallets           Wallet[]
+}
+
+model GroupMember {
+  id                String          @id @default(uuid())
+  groupId           String
+  userId            String
+  role              GroupRole       @default(MEMBER)
+  joinedAt          DateTime        @default(now())
+
+  // Relations
+  group             Group           @relation(fields: [groupId], references: [id])
+  user              User            @relation(fields: [userId], references: [id])
+}
+
+enum GroupRole {
+  ADMIN
+  MEMBER
+}
+
+model CreatorProfile {
+  id                String          @id @default(uuid())
+  userId            String          @unique
+  bio               String?
+  monthlyRate       Decimal?        @db.Decimal(20, 8)
+  isVerified        Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  // Relations
+  user              User            @relation(fields: [userId], references: [id])
+  subscribers       Subscription[]
+}
+
+model Subscription {
+  id                String          @id @default(uuid())
+  creatorId         String
+  subscriberId      String
+  status            SubscriptionStatus @default(ACTIVE)
+  expiresAt         DateTime?
+  createdAt         DateTime        @default(now())
+
+  // Relations
+  creator           CreatorProfile  @relation(fields: [creatorId], references: [id])
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
+
+model AIInsight {
+  id                String          @id @default(uuid())
+  userId            String
+  type              InsightType
+  content           String          @db.Text
+  analysisData      Json?
+  createdAt         DateTime        @default(now())
+
+  // Relations
+  user              User            @relation(fields: [userId], references: [id])
+}
+
+enum InsightType {
+  SPENDING_SUMMARY
+  SCAM_ALERT
+  BUDGET_ADVICE
+  INVESTMENT_TIP
+}
+
+model Notification {
+  id                String          @id @default(uuid())
+  userId            String
+  title             String
+  message           String
+  type              String
+  isRead            Boolean         @default(false)
+  createdAt         DateTime        @default(now())
+
+  // Relations
+  user              User            @relation(fields: [userId], references: [id])
+}

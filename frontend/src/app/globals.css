@@ -1,0 +1,66 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #00f5a0;
+  --color-primary-glow: rgba(0, 245, 160, 0.5);
+  --color-surface: #0a0a0b;
+  --color-glass: rgba(255, 255, 255, 0.03);
+  --color-glass-border: rgba(255, 255, 255, 0.08);
+}
+
+@layer base {
+  :root {
+    --background: #000000;
+    --foreground: #ffffff;
+  }
+
+  body {
+    @apply text-white bg-black antialiased;
+    font-family: 'Inter', sans-serif;
+    overflow-x: hidden;
+  }
+}
+
+/* Define custom utilities using @utility for v4 compatibility */
+@utility glass-card {
+  @apply bg-white/5 backdrop-blur-xl border border-white/10 rounded-3xl;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.8);
+}
+
+@utility btn-primary {
+  @apply bg-[#00F5A0] text-black font-bold py-4 px-8 rounded-full transition-all duration-300 active:scale-95;
+  box-shadow: 0 0 20px rgba(0, 245, 160, 0.3);
+}
+
+@utility btn-secondary {
+  @apply glass-card py-4 px-8 text-white font-medium hover:bg-white/10;
+}
+
+@utility text-gradient {
+  @apply bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 5px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+/* Animations */
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 20px rgba(0, 245, 160, 0.2); }
+  50% { box-shadow: 0 0 40px rgba(0, 245, 160, 0.4); }
+  100% { box-shadow: 0 0 20px rgba(0, 245, 160, 0.2); }
+}
+
+.animate-glow {
+  animation: pulse-glow 3s infinite;
+}
