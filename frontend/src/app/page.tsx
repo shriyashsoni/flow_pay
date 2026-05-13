@@ -11,7 +11,7 @@ import { useWallets, usePrivy } from '@privy-io/react-auth';
 import { SERA_DOMAIN, SERA_TYPES } from '@/utils/seraEip712';
 import Image from 'next/image';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001';
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://flow-pay-jo5r.onrender.com';
 
 export default function Home() {
   const { login, authenticated, user, logout, getAccessToken } = usePrivy();

@@ -4,7 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Camera, Sparkles, UserPlus, ArrowRight, Loader2 } from 'lucide-react';
 import { usePrivy } from '@privy-io/react-auth';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001';
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://flow-pay-jo5r.onrender.com';
 
 export default function BillSplitter({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) {
   const { getAccessToken } = usePrivy();

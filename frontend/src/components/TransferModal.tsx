@@ -7,7 +7,7 @@ import { SERA_DOMAIN, SERA_TYPES, MAINNET_USDC } from '@/utils/seraEip712';
 import { encodeStandaloneUuid } from '@/utils/seraUtils';
 import { v4 as uuidv4 } from 'uuid';
 
-const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4001';
+const API_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'https://flow-pay-jo5r.onrender.com';
 
 export default function TransferModal({
   isOpen,
