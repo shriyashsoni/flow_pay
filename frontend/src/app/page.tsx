@@ -4,6 +4,7 @@ import ActionButtons from '@/components/ActionButtons';
 import TransactionItem from '@/components/TransactionItem';
 import TransferModal from '@/components/TransferModal';
 import BillSplitter from '@/components/BillSplitter';
+import MerchantPaymentModal from '@/components/MerchantPaymentModal';
 import { motion } from 'framer-motion';
 import { useState, useEffect, useCallback } from 'react';
 import { Search, Bell, Home as HomeIcon, Activity, CreditCard, User, Zap } from 'lucide-react';
@@ -19,6 +20,7 @@ export default function Home() {
   const { wallets } = useWallets();
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [isBillOpen, setIsBillOpen] = useState(false);
+  const [isMerchantOpen, setIsMerchantOpen] = useState(false);
   const [isActivating, setIsActivating] = useState(false);
   const [seraKey, setSeraKey] = useState<string | null>(null);
   const [realBalance, setRealBalance] = useState(0);
@@ -220,6 +222,7 @@ export default function Home() {
           <ActionButtons onAction={(id) => {
             if (id === 'send') setIsTransferOpen(true);
             if (id === 'bill') setIsBillOpen(true);
+            if (id === 'merchant') setIsMerchantOpen(true);
           }} />
         </div>
 
@@ -239,6 +242,12 @@ export default function Home() {
         <BillSplitter
           isOpen={isBillOpen}
           onClose={() => setIsBillOpen(false)}
+        />
+
+        {/* Merchant Payment Modal */}
+        <MerchantPaymentModal
+          isOpen={isMerchantOpen}
+          onClose={() => setIsMerchantOpen(false)}
         />
 
         {/* Sera Onboarding */}

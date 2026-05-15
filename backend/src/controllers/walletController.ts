@@ -9,11 +9,13 @@ export class WalletController {
         where: { id: req.user.id }
       });
 
-      if (user?.seraApiKey && user?.seraApiSecret) {
-        const balances = await seraService.getBalances(user.seraApiKey, user.seraApiSecret);
+      if (user?.privyWalletAddress) {
+        const response = await seraService.getBalances(user.privyWalletAddress);
         // Map Sera balances to our format
-        const usdcBalance = balances.find((b: any) => b.asset === 'USDC')?.amount || 0;
-        return res.json({ balance: parseFloat(usdcBalance), currency: 'USDC' });
+        const usdcBalance = response.balances?.find((b: any) => b.symbol === 'USDC' || b.symbol === 'USDT')?.wallet_balance || '0';
+        // Need to parse uint256 correctly, assuming 6 decimals for USDC
+        const parsedBalance = parseFloat(usdcBalance) / 1e6;
+        return res.json({ balance: parsedBalance, currency: 'USDC' });
       }
 
       res.json({ balance: 0.00, currency: 'USDC' });

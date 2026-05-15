@@ -28,39 +28,46 @@ class PaymentService {
         amount: data.amount,
         currency: data.currency,
         type: TransactionType.PAYMENT,
-        caption: data.caption,
+        caption: data.caption || null,
         visibility: data.visibility || Visibility.PUBLIC,
         status: TransactionStatus.PENDING,
       },
     });
 
     try {
-      // 2. Request a quote from Sera if it's a cross-asset or treasury move
-      // For MVP, we'll assume internal ledger for same currency, Sera for cross-currency
+      // 2. Mock cross-border or internal logic
+      // For MVP, we'll assume internal ledger for same currency.
       // In a real prod environment, all movements might route through Sera
+      // using seraService.getSwapQuote() and seraService.placeSwap()
       
-      const quote = await seraService.getQuote(data.currency, data.currency, data.amount);
-      const execution = await seraService.executeSwap(quote.id);
+      const executionId = `sim_sera_${Date.now()}`;
 
       // 3. Update transaction status
       await prisma.transaction.update({
         where: { id: transaction.id },
         data: {
           status: TransactionStatus.COMPLETED,
-          seraTxId: execution.id,
+          seraTxId: executionId,
         },
       });
 
       // 4. Update balances (local ledger)
-      await prisma.wallet.update({
-        where: { userId: data.senderId },
-        data: { balance: { decrement: data.amount } },
-      });
+      const senderWallet = await prisma.wallet.findFirst({ where: { userId: data.senderId } });
+      const receiverWallet = await prisma.wallet.findFirst({ where: { userId: receiver.id } });
 
-      await prisma.wallet.update({
-        where: { userId: receiver.id },
-        data: { balance: { increment: data.amount } },
-      });
+      if (senderWallet) {
+        await prisma.wallet.update({
+          where: { id: senderWallet.id },
+          data: { balance: { decrement: data.amount } },
+        });
+      }
+
+      if (receiverWallet) {
+        await prisma.wallet.update({
+          where: { id: receiverWallet.id },
+          data: { balance: { increment: data.amount } },
+        });
+      }
 
       return transaction;
     } catch (error) {

@@ -85,11 +85,30 @@ class AIService {
    */
   async parseBillImage(imageBuffer: Buffer, mimeType: string) {
     const prompt = `
-      Look at this receipt image. 
-      1. Extract the name of the establishment.
-      2. List all items with their quantities and prices.
-      3. Identify the subtotal, tax, and total amount.
-      Return ONLY a JSON object with keys: 'establishment', 'items' (array of {name, price}), 'subtotal', 'tax', 'total'.
+      Look at this receipt, bill, or QR code image. 
+      Your goal is to extract the Merchant name, the Amount due, and most importantly, the Payment Destination (Rail).
+
+      1. **Merchant**: Extract the name of the establishment/merchant.
+      2. **Items**: List major items with their quantities and prices if visible.
+      3. **Total & Currency**: Identify the total amount and the ISO currency code (e.g., INR, USD, EUR, GBP).
+      4. **Payment Destination (CRITICAL)**: Analyze the image for any payment rails:
+         - **UPI**: Look for virtual payment addresses (e.g., merchant@upi, paytmqr123@okbizaxis).
+         - **IBAN/SEPA**: Look for IBAN numbers starting with country codes (e.g., DE, FR, GB) and BIC/SWIFT codes.
+         - **ACH/Domestic Bank**: Look for Account Numbers and Routing/Sort codes.
+         - **QR Code**: If there is a QR code, describe its likely type (e.g., "Standard UPI QR", "Stripe Payment Link QR").
+         - **Credit Card**: Look for "Pay to" details for card bills, such as a biller ID or card network.
+
+      Return ONLY a JSON object with these keys: 
+      'establishment', 
+      'items' (array of {name, price}), 
+      'total' (number), 
+      'currency' (string, e.g. "INR"),
+      'paymentDetails': {
+        'type': 'UPI' | 'BANK' | 'CARD_BILL' | 'QR' | 'STRIPE_LINK' | 'UNKNOWN',
+        'value': 'the actual ID, IBAN, or account number',
+        'raw': 'any other visible payment metadata',
+        'country': 'ISO country code if detectable'
+      }
     `;
 
     try {

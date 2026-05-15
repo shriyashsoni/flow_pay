@@ -27,13 +27,14 @@ export class PaymentController {
         data: {
           senderId,
           receiverId: receiver?.id || null,
-          amount: parseFloat(orderData.fromAmount) / 1e6, // Assuming USDC 6 decimals
+          amount: parseFloat(orderData.fromAmount || orderData.maxInputAmount) / 1e6, // Assuming USDC 6 decimals
           currency: 'USDC',
-          caption,
+          type: 'PAYMENT',
+          caption: caption || null,
           visibility: visibility || 'PUBLIC',
           status: 'COMPLETED',
-          seraTxId: seraResult.order_id,
-          blockchainTxHash: seraResult.tx_hash
+          seraTxId: (seraResult.trade_id || seraResult.order_id) as string | null,
+          blockchainTxHash: (seraResult.tx_hash) as string | null
         }
       });
 

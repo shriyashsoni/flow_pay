@@ -15,4 +15,5 @@ export const config = {
   JWT_SECRET: process.env.JWT_SECRET || 'flowpay-super-secret',
   PRIVY_APP_ID: process.env.PRIVY_APP_ID,
   PRIVY_APP_SECRET: process.env.PRIVY_APP_SECRET,
+  STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
 };

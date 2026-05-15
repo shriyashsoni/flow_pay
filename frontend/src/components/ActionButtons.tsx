@@ -1,10 +1,10 @@
 'use client';
 import { motion } from 'framer-motion';
-import { Send, Download, RefreshCw, MessageSquare } from 'lucide-react';
+import { Send, Download, RefreshCw, MessageSquare, Globe } from 'lucide-react';
 
 const actions = [
   { icon: Send, label: 'Send', id: 'send' },
-  { icon: Download, label: 'Receive', id: 'receive' },
+  { icon: Globe, label: 'Pay Merchant', id: 'merchant', color: 'bg-blue-600', textColor: 'text-white' },
   { icon: RefreshCw, label: 'Bill Split', id: 'bill' },
   { icon: MessageSquare, label: 'AI Chat', id: 'chat', color: 'bg-[#00F5A0]', textColor: 'text-black' },
 ];

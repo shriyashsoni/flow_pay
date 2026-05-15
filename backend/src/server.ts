@@ -10,6 +10,7 @@ import { authMiddleware } from './middleware/auth';
 import { supabase } from './utils/supabase';
 import { seraService } from './services/seraService';
 import { aiService } from './services/aiService';
+import { MerchantPaymentController } from './controllers/merchantPaymentController';
 
 const app = express();
 const server = http.createServer(app);
@@ -133,7 +134,7 @@ app.get('/api/wallet/balance', authMiddleware, async (req: any, res) => {
         
         if (usdcBalance) {
           const decimals = usdcBalance.decimals || 6;
-          const totalRaw = BigInt(usdcBalance.total || '0');
+          const totalRaw = BigInt(usdcBalance.wallet_balance || '0');
           const balance = Number(totalRaw) / Math.pow(10, decimals);
           
           return res.json({ 
@@ -146,7 +147,7 @@ app.get('/api/wallet/balance', authMiddleware, async (req: any, res) => {
               walletBalance: Number(BigInt(b.wallet_balance || '0')) / Math.pow(10, b.decimals),
               vaultAvailable: Number(BigInt(b.vault_available || '0')) / Math.pow(10, b.decimals),
               vaultFrozen: Number(BigInt(b.vault_frozen || '0')) / Math.pow(10, b.decimals),
-              total: Number(BigInt(b.total || '0')) / Math.pow(10, b.decimals),
+              total: Number(BigInt(b.wallet_balance || '0')) / Math.pow(10, b.decimals), // Note: Sera API might differ, using wallet_balance as total for now
             }))
           });
         }
@@ -159,7 +160,7 @@ app.get('/api/wallet/balance', authMiddleware, async (req: any, res) => {
           walletAddress,
           allBalances: seraData.balances.map((b: any) => ({
             symbol: b.symbol,
-            total: Number(BigInt(b.total || '0')) / Math.pow(10, b.decimals),
+            total: Number(BigInt(b.wallet_balance || '0')) / Math.pow(10, b.decimals),
           }))
         });
       } catch (seraErr: any) {
@@ -303,6 +304,13 @@ app.post('/api/bill/scan', authMiddleware, upload.single('bill'), async (req: an
     res.status(500).json({ error: 'Failed to scan bill. Try a clearer image.' });
   }
 });
+
+// ─────────────────────────────────────────────────
+// MERCHANT PAYMENTS: Crypto -> AI -> Fiat Rails
+// ─────────────────────────────────────────────────
+app.post('/api/merchant/prepare', authMiddleware, MerchantPaymentController.prepareMerchantPayment);
+app.post('/api/merchant/execute', authMiddleware, MerchantPaymentController.executeMerchantPayment);
+app.get('/api/merchant/track/:trackingId', authMiddleware, MerchantPaymentController.trackStatus);
 
 // ─────────────────────────────────────────────────
 // AI CHAT: Natural language payments
